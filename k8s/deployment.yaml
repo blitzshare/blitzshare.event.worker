@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: blitzshare-event-worker-ns
+  name: blitzshare-event-worker-deployment
+  labels:
+    app: blitzshare-event-worker-app
+spec:
+  selector:
+    matchLabels:
+      app: blitzshare-event-worker-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: blitzshare-event-worker-app
+    spec:
+      containers:
+        - name: blitzshare-event-worker-containter
+          image: iamkimchi/blitzshare.event.worker:latest
+          imagePullPolicy: Always
+          env:
+            - name: QUEUE_URL
+              value: kubemq-cluster-grpc.kubemq.svc.cluster.local
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "250m"
+            requests:
+              memory: 128Mi
+              cpu: "80m"

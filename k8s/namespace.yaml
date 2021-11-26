@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: blitzshare-event-worker-ns
+  labels:
+    name: blitzshare-event-worker-ns
