@@ -21,7 +21,7 @@ k8s-apply:
 	kubectl rollout restart deployment blitzshare-event-worker-deployment --namespace blitzshare-event-worker-ns
 
 k8s-destroy:
-	kubectl delete namespace blitzshare-api-ns
+	kubectl delete namespace blitzshare-event-worker-ns
 
 build-deploy:
 	make dockerhub-build

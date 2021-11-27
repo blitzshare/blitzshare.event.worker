@@ -18,7 +18,6 @@ func initLog() {
 
 func main() {
 	initLog()
-	log.Println("Hello from event worker")
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config %v\n", err)
