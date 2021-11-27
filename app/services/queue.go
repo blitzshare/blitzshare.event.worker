@@ -13,8 +13,8 @@ import (
 const clientId = "blitzshare-event-worker"
 
 const (
-	P2pNodeInstanceChannel = "p2p-node-instance-channel"
-	P2pPeerRegistryCmd     = "p2p-peer-registry-cmd"
+	P2pPeerRegistryCmd          = "p2p-peer-registry-cmd"
+	P2pBootstrapNodeRegistryCmd = "p2p-bootstrap-node-registry-cmd"
 )
 
 type Message struct {
@@ -22,7 +22,17 @@ type Message struct {
 	Body      []byte
 }
 
-func SubscribeP2pJoinedEvent(queueUrl string, callback func(p2p *domain.P2pPeerRegistryCmd)) {
+func SubscribeBoostrapNodeJoinedCmd(queueUrl string, callback func(p2p *domain.P2pBootstrapNodeRegistryCmd)) {
+	log.Infoln("subscribed to", P2pBootstrapNodeRegistryCmd)
+	Subscribe(queueUrl, P2pBootstrapNodeRegistryCmd, func(message *kubemq.QueueMessage) {
+		var registry domain.P2pBootstrapNodeRegistryCmd
+		json.Unmarshal(message.Body, &registry)
+		callback(&registry)
+	})
+}
+
+func SubscribeP2pJoinedCmd(queueUrl string, callback func(p2p *domain.P2pPeerRegistryCmd)) {
+	log.Infoln("subscribed to", P2pPeerRegistryCmd)
 	Subscribe(queueUrl, P2pPeerRegistryCmd, func(message *kubemq.QueueMessage) {
 		var registry domain.P2pPeerRegistryCmd
 		json.Unmarshal(message.Body, &registry)

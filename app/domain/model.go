@@ -1,6 +1,11 @@
 package domain
 
 type P2pPeerRegistryCmd struct {
-	MultiAddr   string `form:"multiAddr" binding:"required" json:"multiAddr"`
-	OneTimePass string `form:"oneTimePass" binding:"required" json:"oneTimePass"`
+	MultiAddr   string `json:"multiAddr"`
+	OneTimePass string `json:"oneTimePass"`
+}
+
+type P2pBootstrapNodeRegistryCmd struct {
+	NodeId string `json:"nodeId"`
+	Port   int    `json:"port"`
 }
