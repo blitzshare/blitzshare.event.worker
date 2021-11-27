@@ -22,6 +22,8 @@ spec:
           env:
             - name: QUEUE_URL
               value: kubemq-cluster-grpc.kubemq.svc.cluster.local
+            - name: REDIS_URL
+              value: redis-svc.blitzshare-redis-ns.svc.cluster.local
           resources:
             limits:
               memory: 256Mi
