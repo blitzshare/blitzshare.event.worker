@@ -1,54 +1,36 @@
 package registry
 
-// import (
-// 	"errors"
-// 	"time"
+import (
+	"time"
 
-// 	deps "blitzshare.api/app/dependencies"
-// 	"blitzshare.api/app/server/services/str"
-// 	"github.com/go-redis/redis"
-// 	log "github.com/sirupsen/logrus"
-// )
+	"blitzshare.event.worker/app/dependencies"
+	"blitzshare.event.worker/app/domain"
+	"blitzshare.event.worker/app/services/str"
 
-// type PeerNotFoundError struct {
-// 	arg  int
-// 	prob string
-// }
+	"github.com/go-redis/redis"
 
-// var client *redis.Client
+	log "github.com/sirupsen/logrus"
+)
 
-// func getClient(d *deps.Dependencies) *redis.Client {
-// 	if client == nil {
-// 		client = redis.NewClient(&redis.Options{
-// 			Addr:     d.Config.Settings.RedisUrl,
-// 			Password: "",
-// 		})
-// 		pong, _ := client.Ping().Result()
-// 		log.Infoln("getClient pong", pong)
-// 	}
-// 	return client
-// }
+var client *redis.Client
 
-// func set(d *deps.Dependencies, key string, value string) bool {
-// 	client := getClient(d)
-// 	_, err := client.Set(key, value, time.Second*10000).Result()
-// 	if err != nil {
-// 		log.Errorf("client.Set err", err)
-// 		return false
-// 	} else {
-// 		log.Infof("client.Set {%s : %s}", key, value)
-// 		return true
-// 	}
-// }
+func getClient(d *dependencies.Dependencies) *redis.Client {
+	if client == nil {
+		client = redis.NewClient(&redis.Options{
+			Addr:     d.Config.RedisUrl,
+			Password: "",
+		})
+		pong, _ := client.Ping().Result()
+		log.Infoln("getClient pong", pong)
+	}
+	return client
+}
 
-// type Peer struct {
-// 	MultiAddr   string `form:"multiAddr" binding:"required"`
-// 	OneTimePass string `form:"oneTimePass" binding:"required"`
-// }
+func set(d *dependencies.Dependencies, key string, value string) (string, error) {
+	client := getClient(d)
+	return client.Set(key, value, time.Second*10000).Result()
+}
 
-// func RegisterPeer(d *deps.Dependencies, peer *Peer) error {
-// 	if set(d, str.SanatizeStr(peer.OneTimePass), str.SanatizeStr(peer.MultiAddr)) {
-// 		return nil
-// 	}
-// 	return errors.New("Failed to register peer")
-// }
+func RegisterPeer(d *dependencies.Dependencies, peer *domain.P2pPeerRegistryCmd) (string, error) {
+	return set(d, str.SanatizeStr(peer.OneTimePass), str.SanatizeStr(peer.MultiAddr))
+}

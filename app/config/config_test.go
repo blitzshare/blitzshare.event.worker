@@ -20,7 +20,7 @@ func TestConfig(t *testing.T) {
 
 func setUp() {
 	_ = os.Setenv("QUEUE_URL", "kubemq-cluster-grpc.kubemq.svc.cluster.local")
-	_ = os.Setenv("REDIS_URL", "")
+	_ = os.Setenv("REDIS_URL", "redis-svc.blitzshare-api-ns.svc.cluster.local:6379")
 }
 
 func tearDown() {

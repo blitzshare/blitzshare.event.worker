@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"time"
 
+	"blitzshare.event.worker/app/domain"
 	kubemq "github.com/kubemq-io/kubemq-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,12 +14,24 @@ const clientId = "blitzshare-event-worker"
 
 const (
 	P2pNodeInstanceChannel = "p2p-node-instance-channel"
-	P2pPeerRegistry        = "p2p-peer-registry"
+	P2pPeerRegistryCmd     = "p2p-peer-registry-cmd"
 )
 
-func Subscribe(queueUrl string, topic string, callback func(i interface{})) {
-	fmt.Println("Infinite Loop 2")
-	for true {
+type Message struct {
+	MessageID string
+	Body      []byte
+}
+
+func SubscribeP2pJoinedEvent(queueUrl string, callback func(p2p *domain.P2pPeerRegistryCmd)) {
+	Subscribe(queueUrl, P2pPeerRegistryCmd, func(message *kubemq.QueueMessage) {
+		var registry domain.P2pPeerRegistryCmd
+		json.Unmarshal(message.Body, &registry)
+		callback(&registry)
+	})
+}
+
+func Subscribe(queueUrl string, topic string, callback func(message *kubemq.QueueMessage)) {
+	for {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		client, err := kubemq.NewClient(ctx,
@@ -39,9 +52,10 @@ func Subscribe(queueUrl string, topic string, callback func(i interface{})) {
 			log.Fatal(err)
 		}
 		if receiveResult.MessagesReceived > 0 {
-			log.Printf("Received %d Messages:\n", receiveResult.MessagesReceived)
+			log.Infoln("Received Messages", receiveResult.MessagesReceived)
 			for _, msg := range receiveResult.Messages {
-				log.Printf("MessageID: %s, Body: %s", msg.MessageID, string(msg.Body))
+				// log.Printf("MessageID: %s, Body: %s", msg.MessageID, string(msg.Body))
+				callback(msg)
 			}
 		}
 		time.Sleep(time.Second * 1)
