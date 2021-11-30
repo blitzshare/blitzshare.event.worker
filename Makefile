@@ -29,7 +29,8 @@ build-deploy:
 
 docker-build:
 	docker buildx build --platform linux/amd64 -t  blitzshare.api:latest .
-	docker build -t  blitzshare.event.worker:latest .
+	docker build -t blitzshare.event.worker:latest .
+	minikube image load blitzshare.event.worker:latest
 	
 dockerhub-build:
 	make docker-build
