@@ -27,9 +27,12 @@ build-deploy:
 	make dockerhub-build
 	make k8s-apply
 
-dockerhub-build:
-	# docker buildx build --platform linux/amd64 -t  blitzshare.api:latest .
+docker-build:
+	docker buildx build --platform linux/amd64 -t  blitzshare.api:latest .
 	docker build -t  blitzshare.event.worker:latest .
+	
+dockerhub-build:
+	make docker-build
 	docker tag blitzshare.event.worker:latest iamkimchi/blitzshare.event.worker:latest
 	docker push iamkimchi/blitzshare.event.worker:latest
 
