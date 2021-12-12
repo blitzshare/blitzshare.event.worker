@@ -17,8 +17,7 @@ spec:
     spec:
       containers:
         - name: blitzshare-event-worker-containter
-          image: blitzshare.event.worker:latest
-          imagePullPolicy: Never # used for local kubernetes deployment
+          image: iamkimchi/blitzshare.event.worker:latest
           env:
             - name: QUEUE_URL
               value: kubemq-cluster-grpc.kubemq.svc.cluster.local
