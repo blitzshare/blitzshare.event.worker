@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: blitzshare-event-worker-ns
+  namespace: blitzshare-ns
   name: blitzshare-event-worker-deployment
   labels:
     app: blitzshare-event-worker-app

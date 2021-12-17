@@ -14,13 +14,13 @@ func TestConfig(t *testing.T) {
 
 	assert.Nil(t, err, "Unable to log the config")
 	assert.Equal(t, cfg.QueueUrl, "kubemq-cluster-grpc.kubemq.svc.cluster.local")
-	assert.Equal(t, cfg.RedisUrl, "redis-svc.blitzshare-api-ns.svc.cluster.local:6379")
+	assert.Equal(t, cfg.RedisUrl, "redis-svc.blitzshare-ns.svc.cluster.local:6379")
 	tearDown()
 }
 
 func setUp() {
 	_ = os.Setenv("QUEUE_URL", "kubemq-cluster-grpc.kubemq.svc.cluster.local")
-	_ = os.Setenv("REDIS_URL", "redis-svc.blitzshare-api-ns.svc.cluster.local:6379")
+	_ = os.Setenv("REDIS_URL", "redis-svc.blitzshare-ns.svc.cluster.local:6379")
 }
 
 func tearDown() {

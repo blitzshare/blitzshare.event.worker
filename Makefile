@@ -18,10 +18,10 @@ build:
 k8s-apply:
 	kubectl apply -f k8s/namespace.yaml
 	kubectl apply -f k8s/deployment.yaml
-	kubectl rollout restart deployment blitzshare-event-worker-deployment --namespace blitzshare-event-worker-ns
+	kubectl rollout restart deployment blitzshare-event-worker-deployment --namespace blitzshare-ns
 
 k8s-destroy:
-	kubectl delete namespace blitzshare-event-worker-ns
+	kubectl delete namespace blitzshare-ns
 
 build-deploy:
 	make dockerhub-build
@@ -38,4 +38,4 @@ dockerhub-build:
 	docker push iamkimchi/blitzshare.event.worker:latest
 
 minikube-svc:
-	minikube service blitzshare-api-svc -n blitzshare-api-ns
+	minikube service blitzshare-api-svc -n blitzshare-ns
