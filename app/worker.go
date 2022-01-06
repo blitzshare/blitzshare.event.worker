@@ -16,12 +16,12 @@ func Start(dep *dependencies.Dependencies) {
 		log.Infoln("Peer Registry", peer)
 		res, err := registry.RegisterPeer(dep, peer)
 		if err != nil {
-			log.Errorln("Peer Registry", res, err)
+			log.Errorln("SUCCESS Peer Registry", res, err)
 		} else {
-			log.Infoln("Peer Registry", res, err)
+			log.Infoln("FAILED Peer Registry", res, err)
 		}
 	})
-
+	// TODO
 	go services.SubscribeBoostrapNodeJoinedCmd(dep.Config.QueueUrl, func(node *domain.P2pBootstrapNodeRegistryCmd) {
 		log.Infoln("Node Registry", node)
 		// TODO: change the way we store node info
