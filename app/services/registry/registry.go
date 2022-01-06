@@ -37,7 +37,7 @@ const (
 
 func RegisterPeer(d *dependencies.Dependencies, peer *domain.P2pPeerRegistryCmd) (string, error) {
 	client := getClient(d, P2pPeersDb)
-	return client.Set(str.SanatizeStr(peer.OneTimePass), str.SanatizeStr(peer.MultiAddr), DefaultKeyTimeout).Result()
+	return client.Set(str.SanatizeStr(peer.Otp), str.SanatizeStr(peer.MultiAddr), DefaultKeyTimeout).Result()
 }
 
 func RegisterNode(d *dependencies.Dependencies, node *domain.P2pBootstrapNodeRegistryCmd) (string, error) {

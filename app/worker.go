@@ -13,9 +13,9 @@ func Start(dep *dependencies.Dependencies) {
 	// go services.Subscribe(dep.Config.QueueUrl, services.P2pPeerRegistry, onP2pPeerJoined)
 
 	go services.SubscribeP2pJoinedCmd(dep.Config.QueueUrl, func(peer *domain.P2pPeerRegistryCmd) {
-		log.Infoln("Peer Registry", peer)
+		log.Printf("Peer Registry [%s], [%s]`n", peer.MultiAddr, peer.Otp)
 		res, err := registry.RegisterPeer(dep, peer)
-		if err != nil {
+		if err == nil {
 			log.Errorln("SUCCESS Peer Registry", res, err)
 		} else {
 			log.Infoln("FAILED Peer Registry", res, err)

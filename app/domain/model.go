@@ -1,8 +1,8 @@
 package domain
 
 type P2pPeerRegistryCmd struct {
-	MultiAddr   string `json:"multiAddr"`
-	OneTimePass string `json:"oneTimePass"`
+	MultiAddr string `json:"multiAddr"`
+	Otp       string `json:"otp"`
 }
 
 type P2pBootstrapNodeRegistryCmd struct {
