@@ -16,7 +16,7 @@ spec:
         app: blitzshare-event-worker-app
     spec:
       containers:
-        - name: blitzshare-event-worker-containter
+        - name: blitzshare-event-worker
           image: iamkimchi/blitzshare.event.worker:latest
           env:
             - name: QUEUE_URL
