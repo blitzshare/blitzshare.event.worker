@@ -34,7 +34,7 @@ const (
 	P2pBootstraoNodeDb  = 1
 	DefaultKeyTimeout   = time.Second * 10000
 	NoExpirationTimeout = 0
-	BootstrapNodeId     = "BootstrapNodeId"
+	BootstrapNode       = "BootstrapNode"
 )
 
 func (r *RegistryIml) getClient(db int) *redis.Client {
@@ -61,5 +61,5 @@ func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (st
 		log.Fatal(err)
 	}
 	client := r.getClient(P2pBootstraoNodeDb)
-	return client.Set(BootstrapNodeId, string(bEvent), NoExpirationTimeout).Result()
+	return client.Set(BootstrapNode, string(bEvent), NoExpirationTimeout).Result()
 }
