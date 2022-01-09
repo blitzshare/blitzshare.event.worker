@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
 	"blitzshare.event.worker/app/services/str"
 
@@ -13,38 +12,54 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Registry interface {
+	RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, error)
+	RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (string, error)
+}
+
+type RegistryIml struct {
+	RedisUrl string
+}
+
+func NewRegistry(RedisUrl string) Registry {
+	return &RegistryIml{
+		RedisUrl: RedisUrl,
+	}
+}
+
 var client *redis.Client
 
-func getClient(d *dependencies.Dependencies, db int) *redis.Client {
+const (
+	P2pPeersDb          = 0
+	P2pBootstraoNodeDb  = 1
+	DefaultKeyTimeout   = time.Second * 10000
+	NoExpirationTimeout = 0
+	BootstrapNodeId     = "BootstrapNodeId"
+)
+
+func (r *RegistryIml) getClient(db int) *redis.Client {
 	if client == nil {
 		client = redis.NewClient(&redis.Options{
-			Addr:     d.Config.RedisUrl,
+			Addr:     r.RedisUrl,
 			Password: "",
 			DB:       db,
 		})
 		pong, _ := client.Ping().Result()
-		log.Infoln("getClient pong", pong)
+		log.Infoln("getClient", pong)
 	}
 	return client
 }
 
-const (
-	P2pPeersDb         = 0
-	P2pBootstraoNodeDb = 1
-	NodeList           = "p2p-bootstrap-nodes"
-	DefaultKeyTimeout  = time.Second * 10000
-)
-
-func RegisterPeer(d *dependencies.Dependencies, peer *domain.P2pPeerRegistryCmd) (string, error) {
-	client := getClient(d, P2pPeersDb)
+func (r *RegistryIml) RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, error) {
+	client := r.getClient(P2pPeersDb)
 	return client.Set(str.SanatizeStr(peer.Otp), str.SanatizeStr(peer.MultiAddr), DefaultKeyTimeout).Result()
 }
 
-func RegisterNode(d *dependencies.Dependencies, node *domain.P2pBootstrapNodeRegistryCmd) (string, error) {
+func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (string, error) {
 	bEvent, err := json.Marshal(node)
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := getClient(d, P2pBootstraoNodeDb)
-	return client.Set(str.SanatizeStr(node.NodeId), string(bEvent), DefaultKeyTimeout).Result()
+	client := r.getClient(P2pBootstraoNodeDb)
+	return client.Set(BootstrapNodeId, string(bEvent), NoExpirationTimeout).Result()
 }

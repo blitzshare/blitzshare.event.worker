@@ -4,33 +4,27 @@ import (
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
 	"blitzshare.event.worker/app/services"
-	"blitzshare.event.worker/app/services/registry"
 	log "github.com/sirupsen/logrus"
 )
 
 func Start(dep *dependencies.Dependencies) {
-	log.Infoln("SubscribeToQueue")
-	// go services.Subscribe(dep.Config.QueueUrl, services.P2pPeerRegistry, onP2pPeerJoined)
-
+	log.Infoln("worker Subscribed To Queue", dep.Config.QueueUrl)
 	go services.SubscribeP2pJoinedCmd(dep.Config.QueueUrl, func(peer *domain.P2pPeerRegistryCmd) {
 		log.Printf("Peer Registry [%s], [%s]`n", peer.MultiAddr, peer.Otp)
-		res, err := registry.RegisterPeer(dep, peer)
+		res, err := dep.Registry.RegisterPeer(peer)
 		if err == nil {
 			log.Errorln("SUCCESS Peer Registry", res, err)
 		} else {
 			log.Infoln("FAILED Peer Registry", res, err)
 		}
 	})
-	// TODO
 	go services.SubscribeBoostrapNodeJoinedCmd(dep.Config.QueueUrl, func(node *domain.P2pBootstrapNodeRegistryCmd) {
 		log.Infoln("Node Registry", node)
-		// TODO: change the way we store node info
-		// res, err := registry.RegisterNode(dep, node)
-		// if err != nil {
-		// 	log.Errorln("Node Registry", res, err)
-		// } else {
-		// 	log.Infoln("Node Registry", res, err)
-		// }
+		res, err := dep.Registry.RegisterNode(node)
+		if err == nil {
+			log.Errorln("SUCCESS Node Registry", res, err)
+		} else {
+			log.Infoln("FAILED Node Registry", res, err)
+		}
 	})
-
 }
