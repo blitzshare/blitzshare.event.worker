@@ -34,7 +34,7 @@ var client *redis.Client
 const (
 	P2pPeersDb          = 0
 	P2pBootstraoNodeDb  = 1
-	DefaultKeyTimeout   = time.Second * 10000
+	DefaultKeyTimeout   = time.Second * 900
 	NoExpirationTimeout = 0
 	BootstrapNode       = "BootstrapNode"
 )
