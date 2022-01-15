@@ -2,6 +2,7 @@ package registry
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"blitzshare.event.worker/app/domain"
@@ -14,6 +15,7 @@ import (
 
 type Registry interface {
 	RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, error)
+	DeregisterPeer(peer *domain.P2pPeerDeregisterCmd) error
 	RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (string, error)
 }
 
@@ -66,4 +68,25 @@ func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (st
 	}
 	client := r.getClient(P2pBootstraoNodeDb)
 	return client.Set(BootstrapNode, string(bEvent), NoExpirationTimeout).Result()
+}
+
+func (r *RegistryIml) DeregisterPeer(cmd *domain.P2pPeerDeregisterCmd) error {
+	client := r.getClient(P2pPeersDb)
+	value, err := client.Get(cmd.Otp).Result()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var peer domain.P2pPeerRegistryCmd
+	err = json.Unmarshal([]byte(value), &peer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if peer.Token == cmd.Token {
+		_, err := client.Del(cmd.Otp).Result()
+		if err == nil {
+			return nil
+		}
+		return err
+	}
+	return errors.New("cannot deregistre, token missmatch")
 }

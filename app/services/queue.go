@@ -13,13 +13,23 @@ import (
 const clientId = "blitzshare-event-worker"
 
 const (
-	P2pPeerRegistryCmd          = "p2p-peer-registry-cmd"
 	P2pBootstrapNodeRegistryCmd = "p2p-bootstrap-node-registry-cmd"
+	PeerRegisterCmd             = "p2p-peer-register-cmd"
+	PeerDeregisterCmd           = "p2p-peer-deregister-cmd"
 )
 
 type Message struct {
 	MessageID string
 	Body      []byte
+}
+
+func SubscribePeerDeregisterCmd(queueUrl string, callback func(p2p *domain.P2pPeerDeregisterCmd)) {
+	log.Infoln("subscribed to", PeerDeregisterCmd)
+	Subscribe(queueUrl, PeerDeregisterCmd, func(message *kubemq.QueueMessage) {
+		var registry domain.P2pPeerDeregisterCmd
+		json.Unmarshal(message.Body, &registry)
+		callback(&registry)
+	})
 }
 
 func SubscribeBoostrapNodeJoinedCmd(queueUrl string, callback func(p2p *domain.P2pBootstrapNodeRegistryCmd)) {
@@ -32,8 +42,8 @@ func SubscribeBoostrapNodeJoinedCmd(queueUrl string, callback func(p2p *domain.P
 }
 
 func SubscribeP2pJoinedCmd(queueUrl string, callback func(p2p *domain.P2pPeerRegistryCmd)) {
-	log.Infoln("subscribed to", P2pPeerRegistryCmd)
-	Subscribe(queueUrl, P2pPeerRegistryCmd, func(message *kubemq.QueueMessage) {
+	log.Infoln("subscribed to", PeerRegisterCmd)
+	Subscribe(queueUrl, PeerRegisterCmd, func(message *kubemq.QueueMessage) {
 		var registry domain.P2pPeerRegistryCmd
 		json.Unmarshal(message.Body, &registry)
 		callback(&registry)

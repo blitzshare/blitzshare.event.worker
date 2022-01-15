@@ -1,9 +1,15 @@
 package domain
 
 type P2pPeerRegistryCmd struct {
-	MultiAddr string `json:"multiAddr"`
-	Otp       string `json:"otp"`
-	Mode      string `json:"mode"`
+	MultiAddr string `binding:"required" json:"multiAddr"`
+	Otp       string `binding:"required" json:"otp"`
+	Mode      string `binding:"required" json:"mode"`
+	Token     string `binding:"required" json:"token"`
+}
+
+type P2pPeerDeregisterCmd struct {
+	Otp   string `form:"otp" binding:"required" json:"otp"`
+	Token string `form:"otp" binding:"required" json:"token"`
 }
 
 type P2pBootstrapNodeRegistryCmd struct {

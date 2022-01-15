@@ -27,4 +27,14 @@ func Start(dep *dependencies.Dependencies) {
 			log.Infoln("FAILED Node Registry", res, err)
 		}
 	})
+	go services.SubscribePeerDeregisterCmd(dep.Config.QueueUrl, func(cmd *domain.P2pPeerDeregisterCmd) {
+		log.Infoln("SubscribePeerDeregisterCmd", cmd)
+		err := dep.Registry.DeregisterPeer(cmd)
+		if err == nil {
+			log.Infoln("SUCCESS Peer Deregistry", err)
+		} else {
+			log.Infoln("FAILED Node Registry", err)
+		}
+	})
+
 }
