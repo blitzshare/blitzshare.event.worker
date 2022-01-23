@@ -18,10 +18,11 @@ build:
 k8s-apply:
 	kubectl apply -f k8s/namespace.yaml
 	kubectl apply -f k8s/deployment.yaml
+	kubectl apply -f k8s/hpa.yaml
 	kubectl rollout restart deployment blitzshare-event-worker-dpl --namespace blitzshare-ns
 
 k8s-destroy:
-	kubectl delete namespace blitzshare-ns
+	kubectl delete deployment blitzshare-event-worker-dpl
 
 build-deploy:
 	make dockerhub-build
