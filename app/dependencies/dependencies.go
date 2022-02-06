@@ -11,7 +11,8 @@ type Dependencies struct {
 }
 
 func NewDependencies(config config.Config) (*Dependencies, error) {
-	return &Dependencies{Config: config,
+	return &Dependencies{
+		Config:   config,
 		Registry: registry.NewRegistry(config.RedisUrl),
 	}, nil
 }

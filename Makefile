@@ -1,13 +1,21 @@
+
+SHELL := /bin/bash
+CWD := $(shell cd -P -- '$(shell dirname -- "$0")' && pwd -P)
+export GO111MODULE := on
+export GOBIN := $(CWD)/.bin
+
 install:
-	go install golang.org/x/tools/cmd/goimports@latest
+	go install $(shell go list -f '{{join .Imports " "}}' tools.go)
+	go get -d github.com/vektra/mockery/v2/.../
 	go mod vendor
 
 test:
-	ENV=test && go test -v ./... -v -count=1
-
+	go test  --tags='test' -v ./app/... -v -count=1 -cover -coverprofile=coverage.out
+coverage-report-html:
+	go tool cover -html=coverage.out		
 fix-format:
-	gofmt -w -s app/ pkg/ cmd/ mocks/ testhelpers
-	goimports -w app/ pkg/ cmd/ mocks/ testhelpers
+	gofmt -w -s app/ cmd/ mocks/ testhelpers
+	goimports -w app/  cmd/ mocks/ testhelpers
 
 start:
 	go run cmd/main.go
@@ -39,3 +47,6 @@ dockerhub-build:
 
 minikube-svc:
 	minikube service blitzshare-api-svc -n blitzshare-ns
+
+build-mocks:
+	.bin/mockery --all --dir "./app/"
