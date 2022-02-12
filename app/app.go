@@ -3,38 +3,31 @@ package app
 import (
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
-	"blitzshare.event.worker/app/services"
+	event2 "blitzshare.event.worker/app/services/event"
+	"blitzshare.event.worker/app/services/queue"
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 )
 
-func Start(dep *dependencies.Dependencies) {
-	log.Infoln("worker Subscribed To Queue", dep.Config.QueueUrl)
-	go services.SubscribeP2pJoinedCmd(dep.Config.QueueUrl, func(peer *domain.P2pPeerRegistryCmd) {
-		log.Printf("Peer Registry [%s], [%s]`n", peer.MultiAddr, peer.Otp)
-		res, err := dep.Registry.RegisterPeer(peer)
-		if err == nil {
-			log.Errorln("SUCCESS Peer Registry", res, err)
-		} else {
-			log.Infoln("FAILED Peer Registry", res, err)
-		}
-	})
-	go services.SubscribeBoostrapNodeJoinedCmd(dep.Config.QueueUrl, func(node *domain.P2pBootstrapNodeRegistryCmd) {
-		log.Infoln("Node Registry", node)
-		res, err := dep.Registry.RegisterNode(node)
+func NodeRegistry(dep *dependencies.Dependencies) {
+	go dep.Mq.Sub(queue.P2pBootstrapNodeRegistryCmd, func(msg *[]byte) {
+		var node domain.P2pBootstrapNodeRegistryCmd
+		json.Unmarshal(*msg, &node)
+		res, err := dep.Registry.RegisterNode(&node)
 		if err == nil {
 			log.Errorln("SUCCESS Node Registry", res, err)
 		} else {
 			log.Infoln("FAILED Node Registry", res, err)
 		}
 	})
-	go services.SubscribePeerDeregisterCmd(dep.Config.QueueUrl, func(cmd *domain.P2pPeerDeregisterCmd) {
-		log.Infoln("SubscribePeerDeregisterCmd", cmd)
-		err := dep.Registry.DeregisterPeer(cmd)
-		if err == nil {
-			log.Infoln("SUCCESS Peer Deregistry", err)
-		} else {
-			log.Infoln("FAILED Node Registry", err)
-		}
-	})
+}
 
+func Start(dep *dependencies.Dependencies) {
+	log.Infoln("worker Subscribed To Queue", dep.Config.QueueUrl)
+	// local test: kubemqctl queues send p2p-peer-register-cmd '{"multiAddr": "multiAddr", "otp":"otp", "mode": "mode", "token":"token"}'
+	event2.PeerRegistry(dep)
+	// local test: kubemqctl queues send p2p-bootstrap-node-registry-cmd '{"nodeId":"nodeId", "port": 123}'
+	NodeRegistry(dep)
+	//local test: kubemqctl queues send p2p-peer-deregister-cmd  '{"token":"token", "otp": "otp"}'
+	event2.PeerDeRegistry(dep)
 }
