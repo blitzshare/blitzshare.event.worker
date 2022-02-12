@@ -1,10 +1,10 @@
 package event_test
 
 import (
-	"blitzshare.event.worker/app"
 	"blitzshare.event.worker/app/config"
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
+	"blitzshare.event.worker/app/services/event"
 	"blitzshare.event.worker/app/services/queue"
 	"blitzshare.event.worker/mocks"
 	"blitzshare.event.worker/test"
@@ -12,9 +12,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
-	"reflect"
-	"runtime"
-	"strings"
 )
 
 var _ = Describe("Node registry event testss", func() {
@@ -36,20 +33,14 @@ var _ = Describe("Node registry event testss", func() {
 				}
 				return check
 			})).Return("ackId", nil)
-
 			mq.On("Sub",
 				mock.MatchedBy(func(input string) bool {
 					return input == queue.P2pBootstrapNodeRegistryCmd
 				}),
 				mock.MatchedBy(func(cb func(*[]byte)) bool {
-					// TODO: change  from reflection function name check to type check
-					name := runtime.FuncForPC(reflect.ValueOf(cb).Pointer()).Name()
-					check := strings.Contains(name, "NodeRegistry")
-					if check {
-						bytes, _ := json.Marshal(nodeRegistryCmd)
-						cb(&bytes)
-					}
-					return check
+					bytes, _ := json.Marshal(nodeRegistryCmd)
+					cb(&bytes)
+					return cb != nil
 				}),
 			).Return()
 			mq.On("Sub",
@@ -64,7 +55,7 @@ var _ = Describe("Node registry event testss", func() {
 					RedisUrl: "RedisUrl",
 				},
 			}
-			app.Start(deps)
+			event.NodeRegistry(deps)
 			called := <-registerPeerCallCh
 			Expect(called).To(BeTrue())
 		})
