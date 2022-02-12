@@ -10,3 +10,16 @@ Event worker is responsible for processing events from the subscribed topics in 
 [kubemqctl](https://docs.kubemq.io/getting-started/quick-start)
 
 [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+
+
+## Event Debugging
+```bash
+# PeerRegistry
+kubemqctl queues send p2p-peer-register-cmd '{"multiAddr": "multiAddr", "otp":"otp", "mode": "mode", "token":"token"}'
+
+# NodeRegistry	
+kubemqctl queues send p2p-bootstrap-node-registry-cmd '{"nodeId":"nodeId", "port": 123}'
+
+# PeerDeRegistry
+kubemqctl queues send p2p-peer-deregister-cmd  '{"token":"token", "otp": "otp"}'
+```
