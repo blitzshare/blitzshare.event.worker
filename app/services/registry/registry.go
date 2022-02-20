@@ -53,6 +53,7 @@ func (r *RegistryIml) getClient(db int) *redis.Client {
 }
 
 func (r *RegistryIml) RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, error) {
+	log.Infoln("RegisterPeer", P2pPeersDb)
 	bEvent, err := json.Marshal(peer)
 	if err != nil {
 		log.Fatal(err)
@@ -62,6 +63,7 @@ func (r *RegistryIml) RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, err
 }
 
 func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (string, error) {
+	log.Infoln("RegisterNode", P2pPeersDb)
 	bEvent, err := json.Marshal(node)
 	if err != nil {
 		log.Fatal(err)
@@ -71,6 +73,7 @@ func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (st
 }
 
 func (r *RegistryIml) DeregisterPeer(cmd *domain.P2pPeerDeregisterCmd) error {
+	log.Infoln("DeregisterPeer", P2pPeersDb)
 	client := r.getClient(P2pPeersDb)
 	value, err := client.Get(cmd.Otp).Result()
 	if err != nil {

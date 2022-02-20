@@ -44,3 +44,5 @@ minikube-svc:
 
 build-mocks:
 	.bin/mockery --all --dir "./app/"
+
+.PHONY: test

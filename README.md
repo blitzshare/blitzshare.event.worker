@@ -4,8 +4,37 @@
 ![logo](./assets/logo.png)
 
 # blitzshare.event.worker
-Event worker is responsible for processing events from the subscribed topics in kubemq and updating redis records accordingly.
+Responsible for processing events from the subscribed topics in kubemq and updating redis records accordingly.
 
+## Getting started
+
+```bash
+# install dependencies
+$ make install
+# start local server
+$ make start
+```
+
+## Tests
+```bash
+# unit tests
+$ make test
+# re/build mocks
+$ make build-mocks
+# generate test coverage report
+$ make coverage-report-html
+```
+
+## Debugging events locally (kumebqctl):
+
+```bash
+# peer registry cmd
+$ kubemqctl queues send p2p-peer-register-cmd '{"multiAddr": "multiAddr", "otp":"otp", "mode": "mode", "token":"token"}'
+# node registry cmd
+$ kubemqctl queues send p2p-bootstrap-node-registry-cmd '{"nodeId":"nodeId", "port": 123}'
+# peer deregister cmd
+$ kubemqctl queues send p2p-peer-deregister-cmd  '{"token":"token", "otp": "otp"}'
+```
 ## Tools
 [kubemqctl](https://docs.kubemq.io/getting-started/quick-start)
 

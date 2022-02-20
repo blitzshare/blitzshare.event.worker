@@ -14,9 +14,9 @@ func PeerDeRegistry(dep *dependencies.Dependencies) {
 		json.Unmarshal(*msg, &peer)
 		err := dep.Registry.DeregisterPeer(&peer)
 		if err == nil {
-			log.Infoln("SUCCESS Peer DeRegistry", err)
+			log.Infoln("SUCCESS PeerDeRegistry", err)
 		} else {
-			log.Infoln("FAILED Node Registry", err)
+			log.Infoln("FAILED PeerDeRegistry", err)
 		}
 	})
 }

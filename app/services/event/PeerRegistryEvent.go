@@ -14,9 +14,9 @@ func PeerRegistry(dep *dependencies.Dependencies) {
 		json.Unmarshal(*msg, &peer)
 		res, err := dep.Registry.RegisterPeer(&peer)
 		if err == nil {
-			log.Errorln("SUCCESS Node Registry", res, err)
+			log.Errorln("SUCCESS PeerRegistry", res, err)
 		} else {
-			log.Infoln("FAILED Node Registry", res, err)
+			log.Infoln("FAILED PeerRegistry", res, err)
 		}
 	})
 }

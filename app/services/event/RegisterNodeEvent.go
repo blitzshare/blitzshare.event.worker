@@ -14,9 +14,9 @@ func NodeRegistry(dep *dependencies.Dependencies) {
 		json.Unmarshal(*msg, &node)
 		res, err := dep.Registry.RegisterNode(&node)
 		if err == nil {
-			log.Errorln("SUCCESS Node Registry", res, err)
+			log.Errorln("SUCCESS NodeRegistry", res, err)
 		} else {
-			log.Infoln("FAILED Node Registry", res, err)
+			log.Infoln("FAILED NodeRegistry", res, err)
 		}
 	})
 }
