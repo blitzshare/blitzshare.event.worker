@@ -29,52 +29,58 @@ func NewRegistry(RedisUrl string) Registry {
 	}
 }
 
-var client *redis.Client
+var p2pPeersDbClient *redis.Client
+var p2pBootstraoNodeDbClient *redis.Client
 
 const (
 	P2pPeersDb          = 0
-	P2pBootstraoNodeDb  = 1
+	P2pBootstrapNodeDb  = 1
 	DefaultKeyTimeout   = time.Second * 900
 	NoExpirationTimeout = 0
 	BootstrapNode       = "BootstrapNode"
 )
 
-func (r *RegistryIml) getClient(db int) *redis.Client {
-	if client == nil {
-		client = redis.NewClient(&redis.Options{
+func (r *RegistryIml) getPeersClient() *redis.Client {
+	if p2pPeersDbClient == nil {
+		p2pPeersDbClient = redis.NewClient(&redis.Options{
 			Addr:     r.RedisUrl,
 			Password: "",
-			DB:       db,
+			DB:       P2pPeersDb,
 		})
-		pong, _ := client.Ping().Result()
-		log.Infoln("getClient", pong)
 	}
-	return client
+	return p2pPeersDbClient
+}
+func (r *RegistryIml) getBootstrapNodeDbClient() *redis.Client {
+	if p2pBootstraoNodeDbClient == nil {
+		p2pBootstraoNodeDbClient = redis.NewClient(&redis.Options{
+			Addr:     r.RedisUrl,
+			Password: "",
+			DB:       P2pBootstrapNodeDb,
+		})
+	}
+	return p2pBootstraoNodeDbClient
 }
 
 func (r *RegistryIml) RegisterPeer(peer *domain.P2pPeerRegistryCmd) (string, error) {
-	log.Infoln("RegisterPeer", P2pPeersDb)
 	bEvent, err := json.Marshal(peer)
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := r.getClient(P2pPeersDb)
+	client := r.getPeersClient()
 	return client.Set(str.SanatizeStr(peer.Otp), string(bEvent), DefaultKeyTimeout).Result()
 }
 
 func (r *RegistryIml) RegisterNode(node *domain.P2pBootstrapNodeRegistryCmd) (string, error) {
-	log.Infoln("RegisterNode", P2pPeersDb)
 	bEvent, err := json.Marshal(node)
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := r.getClient(P2pBootstraoNodeDb)
+	client := r.getBootstrapNodeDbClient()
 	return client.Set(BootstrapNode, string(bEvent), NoExpirationTimeout).Result()
 }
 
 func (r *RegistryIml) DeregisterPeer(cmd *domain.P2pPeerDeregisterCmd) error {
-	log.Infoln("DeregisterPeer", P2pPeersDb)
-	client := r.getClient(P2pPeersDb)
+	client := r.getPeersClient()
 	value, err := client.Get(cmd.Otp).Result()
 	if err != nil {
 		log.Fatal(err)
