@@ -5,10 +5,9 @@ export GO111MODULE := on
 export GOBIN := $(CWD)/.bin
 
 install:
-	go install $(shell go list -f '{{join .Imports " "}}' tools.go)
-	go get -d github.com/vektra/mockery/v2/.../
 	go mod vendor
-
+	go install $(shell go list -f '{{join .Imports " "}}' tools.go)
+	go install github.com/vektra/mockery/v2@latest
 test:
 	go test  --tags='test' -v ./app/... -v -count=1 -cover -coverprofile=coverage.out
 coverage-report-html:

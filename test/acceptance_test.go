@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
+	"time"
 )
 
 const (
@@ -40,6 +41,11 @@ var PeerRegistryCmd = domain.P2pPeerRegistryCmd{
 	Otp:       fmt.Sprintf("acceptance-test-gelandelaufer-astromancer-scurvyweed-%d", getRnd()),
 	Token:     fmt.Sprintf("deregistration-token-%d", getRnd()),
 	Mode:      "file",
+}
+
+var PeerDeregistryCmd = domain.P2pPeerDeregisterCmd{
+	Otp:   PeerRegistryCmd.Otp,
+	Token: PeerRegistryCmd.Token,
 }
 
 type P2pBootstrapNodeRegistryCmdKey struct{}
@@ -103,6 +109,14 @@ func dispatchPeerRegistryEvent(ctx context.Context) context.Context {
 	return context.WithValue(ctx, PeerRegistryCmdKey{}, mId)
 }
 
+func dispatchPeerDeregistryEvent(ctx context.Context) context.Context {
+	bEvent, err := json.Marshal(PeerDeregistryCmd)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	mId := emitEvent(bEvent, config.MqPeerDeregisterCmd)
+	return context.WithValue(ctx, PeerRegistryCmdKey{}, mId)
+}
 func dispatchNodeRegistryEvent(ctx context.Context) context.Context {
 	bEvent, err := json.Marshal(BootstrapNodeRegistryCmdMessage)
 	if err != nil {
@@ -123,15 +137,18 @@ func getNodeDbRecord() domain.P2pBootstrapNodeRegistryCmd {
 	return nodeConfig
 }
 
-func getPeerDbRecord(otp string) domain.P2pPeerRegistryCmd {
+func getPeerDbRecord(otp string) (domain.P2pPeerRegistryCmd, error) {
 	client := getPeersClient(REDIS_URL)
 	dbRecord, err := client.Get(otp).Result()
+	if err != nil {
+		return domain.P2pPeerRegistryCmd{}, err
+	}
 	var registry domain.P2pPeerRegistryCmd
 	err = json.Unmarshal([]byte(dbRecord), &registry)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	return registry
+	return registry, nil
 }
 
 func assertNodeRegistryRecordsExists(ctx context.Context) context.Context {
@@ -141,15 +158,42 @@ func assertNodeRegistryRecordsExists(ctx context.Context) context.Context {
 	return ctx
 }
 
-func assertPeerRegistryRecordsExists(ctx context.Context) context.Context {
-	dbRecord := getPeerDbRecord(PeerRegistryCmd.Otp)
+func assertPeerRegistryExists(ctx context.Context) context.Context {
+	dbRecord, err := getPeerDbRecord(PeerRegistryCmd.Otp)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	Expect(dbRecord.Otp).To(Equal(PeerRegistryCmd.Otp))
 	Expect(dbRecord.Mode).To(Equal(PeerRegistryCmd.Mode))
 	Expect(dbRecord.MultiAddr).To(Equal(PeerRegistryCmd.MultiAddr))
 	Expect(dbRecord.Token).To(Equal(PeerRegistryCmd.Token))
 	return ctx
 }
+func assertPeerRegistryNotExists(ctx context.Context) context.Context {
+	_, err := getPeerDbRecord(PeerRegistryCmd.Otp)
+	Expect(err).To(Not(BeNil()))
+	return ctx
+}
 
+func cleanup(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+	nodeConfig := ctx.Value(BootstrapInitConfig{}).(domain.P2pBootstrapNodeRegistryCmd)
+	if nodeConfig.NodeId != "" && nodeConfig.NodeId != BootstrapNodeRegistryCmdMessage.NodeId {
+		client := getBootstrapNodeDbClient(REDIS_URL)
+		bEvent, err := json.Marshal(nodeConfig)
+		if err != nil {
+			return ctx, err
+		}
+		log.Infoln("Restoring bootstrap record to", string(bEvent))
+		_, err = client.Set(BootstrapNodeKey, string(bEvent), 0).Result()
+		if err != nil {
+			return ctx, err
+		}
+		_, err = client.Del(PeerRegistryCmd.Otp).Result()
+		log.Infoln("Deleted peer registry", PeerRegistryCmd.Otp)
+
+	}
+	return ctx, nil
+}
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	RegisterFailHandler(Fail)
 	PanicWith(Panic)
@@ -160,25 +204,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^Node registry event is dispatched$`, dispatchNodeRegistryEvent)
 	ctx.Step(`^Node registry record is created$`, assertNodeRegistryRecordsExists)
 	ctx.Step(`^Peer registry event is dispatched$`, dispatchPeerRegistryEvent)
-	ctx.Step(`^Peer registry record is created$`, assertPeerRegistryRecordsExists)
-	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		nodeConfig := ctx.Value(BootstrapInitConfig{}).(domain.P2pBootstrapNodeRegistryCmd)
-		if nodeConfig.NodeId != BootstrapNodeRegistryCmdMessage.NodeId {
-			client := getBootstrapNodeDbClient(REDIS_URL)
-			bEvent, err := json.Marshal(nodeConfig)
-			if err != nil {
-				return ctx, err
-			}
-			log.Infoln("Restoring bootstrap record to", string(bEvent))
-			_, err = client.Set(BootstrapNodeKey, string(bEvent), 0).Result()
-			if err != nil {
-				return ctx, err
-			}
-			_, err = client.Del(PeerRegistryCmd.Otp).Result()
-			log.Infoln("Deleted peer registry", PeerRegistryCmd.Otp)
-
-		}
-		return ctx, nil
+	ctx.Step(`^Peer registry record is created$`, assertPeerRegistryExists)
+	ctx.Step(`^Peer deregistry event is dispatched$`, dispatchPeerDeregistryEvent)
+	ctx.Step(`^Peer registry record is deleted$`, assertPeerRegistryNotExists)
+	ctx.Step(`^Test Wait for 1 seconds$`, func(ctx context.Context) context.Context {
+		time.Sleep(time.Second * 1)
+		return ctx
 	})
-
+	ctx.After(cleanup)
 }
