@@ -1,15 +1,15 @@
 package event
 
 import (
+	"blitzshare.event.worker/app/config"
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
-	"blitzshare.event.worker/app/services/queue"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 )
 
 func PeerDeRegistry(dep *dependencies.Dependencies) {
-	go dep.Mq.Sub(queue.PeerDeregisterCmd, func(msg *[]byte) {
+	go dep.Mq.Sub(config.MqPeerDeregisterCmd, func(msg *[]byte) {
 		var peer domain.P2pPeerDeregisterCmd
 		json.Unmarshal(*msg, &peer)
 		err := dep.Registry.DeregisterPeer(&peer)

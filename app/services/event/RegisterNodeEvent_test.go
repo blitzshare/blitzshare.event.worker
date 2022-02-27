@@ -5,7 +5,6 @@ import (
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
 	"blitzshare.event.worker/app/services/event"
-	"blitzshare.event.worker/app/services/queue"
 	"blitzshare.event.worker/mocks"
 	"blitzshare.event.worker/test"
 	"encoding/json"
@@ -17,7 +16,7 @@ import (
 var _ = Describe("Node registry event testss", func() {
 	var deps *dependencies.Dependencies
 	Context("Given Mq sub functional", func() {
-		It("expected to call RegisterNode on queue sub P2pBootstrapNodeRegistryCmd", func() {
+		It("expected to call RegisterNode on queue sub MqP2pBootstrapNodeRegistryCmd", func() {
 			nodeRegistryCmd := domain.P2pBootstrapNodeRegistryCmd{
 				Port:   6543,
 				NodeId: "jsdfklsjdlkfjsdkfjklsdfjk",
@@ -35,7 +34,7 @@ var _ = Describe("Node registry event testss", func() {
 			})).Return("ackId", nil)
 			mq.On("Sub",
 				mock.MatchedBy(func(input string) bool {
-					return input == queue.P2pBootstrapNodeRegistryCmd
+					return input == config.MqP2pBootstrapNodeRegistryCmd
 				}),
 				mock.MatchedBy(func(cb func(*[]byte)) bool {
 					bytes, _ := json.Marshal(nodeRegistryCmd)

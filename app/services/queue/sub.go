@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"blitzshare.event.worker/app/config"
 	"context"
 	"time"
 
@@ -9,13 +10,6 @@ import (
 )
 
 const clientId = "blitzshare-event-worker"
-
-const (
-	P2pBootstrapNodeRegistryCmd = "p2p-bootstrap-node-registry-cmd"
-	PeerRegisterCmd             = "p2p-peer-register-cmd"
-	PeerDeregisterCmd           = "p2p-peer-deregister-cmd"
-	Port                        = 50000
-)
 
 type Message struct {
 	MessageID string
@@ -39,7 +33,7 @@ func subscribe(queueUrl string, topic string, cb func(result *mq.ReceiveQueueMes
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		client, err := mq.NewClient(ctx,
-			mq.WithAddress(queueUrl, Port),
+			mq.WithAddress(queueUrl, config.MqPort),
 			mq.WithClientId(clientId),
 			mq.WithTransportType(mq.TransportTypeGRPC))
 		if err != nil {

@@ -12,7 +12,9 @@ install:
 test:
 	go test  --tags='test' -v ./app/... -v -count=1 -cover -coverprofile=coverage.out
 coverage-report-html:
-	go tool cover -html=coverage.out		
+	go tool cover -html=coverage.out
+acceptance-tests:
+	cd "$(CWD)/test"  &&  ../.bin/godog ./**/*.feature
 fix-format:
 	gofmt -w -s app/ cmd/ mocks/ testhelpers
 	goimports -w app/  cmd/ mocks/ testhelpers
@@ -26,23 +28,6 @@ k8s-apply:
 	kubectl rollout restart deployment blitzshare-event-worker-dpl --namespace blitzshare-ns
 k8s-destroy:
 	kubectl delete deployment blitzshare-event-worker-dpl
-build-deploy:
-	make dockerhub-build
-	make k8s-apply
-docker-build:
-	docker buildx build --platform linux/amd64 -t  blitzshare.api:latest .
-	docker build -t blitzshare.event.worker:latest .
-	minikube image load blitzshare.event.worker:latest
-	
-dockerhub-build:
-	make docker-build
-	docker tag blitzshare.event.worker:latest iamkimchi/blitzshare.event.worker:latest
-	docker push iamkimchi/blitzshare.event.worker:latest
-
-minikube-svc:
-	minikube service blitzshare-api-svc -n blitzshare-ns
-
 build-mocks:
 	.bin/mockery --all --dir "./app/"
-
 .PHONY: test

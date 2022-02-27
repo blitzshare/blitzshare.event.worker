@@ -5,7 +5,6 @@ import (
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
 	"blitzshare.event.worker/app/services/event"
-	"blitzshare.event.worker/app/services/queue"
 	"blitzshare.event.worker/mocks"
 	"blitzshare.event.worker/test"
 	"encoding/json"
@@ -23,7 +22,7 @@ var _ = Describe("Test str modue", func() {
 		MultiAddr: "tcp/ip4/0.0.0.0",
 	}
 	Context("Given Mq sub functional", func() {
-		It("expected to call RegisterPeer on queue sub PeerRegisterCmd", func() {
+		It("expected to call RegisterPeer on queue sub MqPeerRegisterCmd", func() {
 			registerPeerCallCh := make(chan bool)
 			mq := &mocks.Mq{}
 			reg := &mocks.Registry{}
@@ -37,7 +36,7 @@ var _ = Describe("Test str modue", func() {
 			})).Return("ackId", nil)
 			mq.On("Sub",
 				mock.MatchedBy(func(input string) bool {
-					return input == queue.PeerRegisterCmd
+					return input == config.MqPeerRegisterCmd
 				}),
 				mock.MatchedBy(func(cb func(*[]byte)) bool {
 					bytes, _ := json.Marshal(peerCmd)
