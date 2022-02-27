@@ -5,7 +5,6 @@ import (
 	"blitzshare.event.worker/app/dependencies"
 	"blitzshare.event.worker/app/domain"
 	"blitzshare.event.worker/app/services/event"
-	"blitzshare.event.worker/app/services/queue"
 	"blitzshare.event.worker/mocks"
 	"blitzshare.event.worker/test"
 	"encoding/json"
@@ -17,7 +16,7 @@ import (
 var _ = Describe("Test str modue", func() {
 	var deps *dependencies.Dependencies
 	Context("Given Mq sub functional", func() {
-		It("expected to call DeregisterPeer on queue sub PeerDeregisterCmd", func() {
+		It("expected to call DeregisterPeer on queue sub MqPeerDeregisterCmd", func() {
 			deRegistryCmd := domain.P2pPeerDeregisterCmd{
 				Otp:   "test-otp",
 				Token: "deregister-token",
@@ -27,7 +26,7 @@ var _ = Describe("Test str modue", func() {
 			reg := &mocks.Registry{}
 			mq.On("Sub",
 				mock.MatchedBy(func(input string) bool {
-					return input == queue.PeerDeregisterCmd
+					return input == config.MqPeerDeregisterCmd
 				}),
 				mock.MatchedBy(func(cb func(*[]byte)) bool {
 					bytes, _ := json.Marshal(deRegistryCmd)

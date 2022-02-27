@@ -7,6 +7,13 @@ type Config struct {
 	RedisUrl string `envconfig:"REDIS_URL"`
 }
 
+const (
+	MqP2pBootstrapNodeRegistryCmd = "p2p-bootstrap-node-registry-cmd"
+	MqPeerRegisterCmd             = "p2p-peer-register-cmd"
+	MqPeerDeregisterCmd           = "p2p-peer-deregister-cmd"
+	MqPort                        = 50000
+)
+
 func Load() (Config, error) {
 	err := LoadEnvironment()
 	cfg := Config{}

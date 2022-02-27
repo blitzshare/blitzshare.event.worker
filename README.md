@@ -8,7 +8,7 @@ Responsible for processing events from the subscribed topics in kubemq and updat
 
 ## Getting started
 
-```bash
+```shell
 # install dependencies
 $ make install
 # start local server
@@ -16,7 +16,7 @@ $ make start
 ```
 
 ## Tests
-```bash
+```shell
 # unit tests
 $ make test
 # re/build mocks
@@ -25,9 +25,22 @@ $ make build-mocks
 $ make coverage-report-html
 ```
 
+### Acceptance test
+Make sure your network is connected to cluster: 
+```shell
+# connect
+$ tellepresence connect
+# disconnect
+$ tellepresence quit
+```
+Run acceptance tests:
+```shell
+$ make acceptance-tests
+```
+
 ## Debugging events locally (kumebqctl):
 
-```bash
+```shell
 # peer registry cmd
 $ kubemqctl queues send p2p-peer-register-cmd '{"multiAddr": "multiAddr", "otp":"otp", "mode": "mode", "token":"token"}'
 # node registry cmd
@@ -39,3 +52,5 @@ $ kubemqctl queues send p2p-peer-deregister-cmd  '{"token":"token", "otp": "otp"
 [kubemqctl](https://docs.kubemq.io/getting-started/quick-start)
 
 [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+
+[telepresence](https://www.telepresence.io/)
