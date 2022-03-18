@@ -3,20 +3,6 @@ orbs:
   kubernetes: circleci/kubernetes@0.12.0
   aws-cli: circleci/aws-cli@2.0.3
 
-gen_k8s_remplates: &gen_k8s_templates
-  - run:
-      name: generate k8s templates
-      command: |
-        sudo apt install gettext-base
-        export DOCKER_IMAGE_URL=iamkimchi/blitzshare.api:latest
-        export PORT=8000
-        export ENV=prod
-        export S3_BUCKET_NAME=blitzshare-fileshare-store
-        export S3_BUCKET_UPLOAD_KEY=share
-        export S3_BUCKET_REGION=eu-west-1
-        envsubst  < ./k8s/config/deployment.tml.yaml > ./k8s/config/deployment.yaml
-        cat ./k8s/config/deployment.yaml
-
 jobs:
   test_job:
     working_directory: ~/repo
@@ -73,27 +59,30 @@ jobs:
       - checkout
       - kubernetes/install-kubectl
       - aws-cli/setup
-      - <<: *gen_k8s_templates
       - run:
-          name: Copnfigure cluster context
-          command: aws eks --region eu-west-1 update-kubeconfig --name blitzshare-cluster 
+          name: configure cluster context
+          command: aws eks --region eu-west-2 update-kubeconfig --name eu-west-2-blitzshare-cluster
       - run:
           name: k8s deploy
           command: |
-            pushd k8s
-            bash apply.sh
-            popd
+            make k8s-apply
+            kubectl rollout status deployment/blitzshare-event-worker-dpl -n blitzshare-ns --timeout=120s
 
 workflows:
-  test-deploy-wf:
+  test-wf:
     jobs:
       - test_job:
-          context: eu-west-1
-          # filters:
-          #   branches:
-          #     ignore:
-          #       - main
-
+          filters:
+            branches:
+              ignore:
+                - main
+  deploy-wf:
+    jobs:
+      - test_job:
+          filters:
+            branches:
+              only:
+                - main
       - build_job:
           context: eu-west-1
           requires:
@@ -102,11 +91,7 @@ workflows:
             branches:
               only:
                 - main
-      # - deploy_job:
-      #     context: eu-west-1
-      #     requires:
-      #       - build_job
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+      - deploy_job:
+          context: eu-west-1
+          requires:
+            - build_job
